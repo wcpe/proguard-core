@@ -50,8 +50,7 @@ class ClassPools(val programClassPool: ClassPool, private val customLibraryClass
 class ClassPoolBuilder private constructor() {
 
     companion object {
-        private val compiler = KotlinCompilation()
-        val libraryClassPool by LibraryClassPoolBuilder(compiler)
+        val libraryClassPool by LibraryClassPoolBuilder(KotlinCompilation())
 
         fun fromClasses(vararg clazz: Clazz): ClassPool {
             return ClassPool().apply {
@@ -107,7 +106,7 @@ class ClassPoolBuilder private constructor() {
             val nonAssemblerSources = source.filterNot { it is AssemblerSource }
 
             if (nonAssemblerSources.isNotEmpty()) {
-                compiler.apply {
+                val compiler = KotlinCompilation().apply {
                     this.sources = nonAssemblerSources.map { it.asSourceFile() }
                     this.inheritClassPath = false
                     this.workingDir = createTempDirectory("ClassPoolBuilder").toFile()
@@ -117,17 +116,19 @@ class ClassPoolBuilder private constructor() {
                     this.jdkHome = jdkHome
                 }
 
-                val result = compiler.compile()
+                try {
+                    val result = compiler.compile()
 
-                if (result.exitCode != KotlinCompilation.ExitCode.OK) {
-                    fail("Compilation error: ${result.messages}")
+                    if (result.exitCode != KotlinCompilation.ExitCode.OK) {
+                        fail("Compilation error: ${result.messages}")
+                    }
+
+                    result.compiledClassAndResourceFiles.filter { it.isClassFile() }.forEach {
+                        classReader.read(FileDataEntry(it))
+                    }
+                } finally {
+                    compiler.workingDir.deleteRecursively()
                 }
-
-                result.compiledClassAndResourceFiles.filter { it.isClassFile() }.forEach {
-                    classReader.read(FileDataEntry(it))
-                }
-
-                compiler.workingDir.deleteRecursively()
             }
 
             source.filterIsInstance<AssemblerSource>().forEach {

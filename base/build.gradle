@@ -140,15 +140,23 @@ publishing {
 					'project.build.sourceEncoding': 'UTF-8'
 				]
 			}
-			repositories {
-				maven {
-					name = 'Github'
-					url = uri('https://maven.pkg.github.com/guardsquare/proguard-core')
-					credentials {
-						username = project.findProperty('PROGUARD_GITHUB_USERNAME')
-						password = project.findProperty('PROGUARD_GITHUB_TOKEN')
-					}
-				}
+		}
+	}
+	repositories {
+		maven {
+			name = 'Github'
+			url = uri('https://maven.pkg.github.com/guardsquare/proguard-core')
+			credentials {
+				username = project.findProperty('PROGUARD_GITHUB_USERNAME')
+				password = project.findProperty('PROGUARD_GITHUB_TOKEN')
+			}
+		}
+		maven {
+			name = 'Wcpe'
+			url = uri('https://maven.wcpe.top/repository/maven-releases/')
+			credentials {
+				username = project.findProperty('WCPE_MAVEN_USERNAME')
+				password = project.findProperty('WCPE_MAVEN_PASSWORD')
 			}
 		}
 	}

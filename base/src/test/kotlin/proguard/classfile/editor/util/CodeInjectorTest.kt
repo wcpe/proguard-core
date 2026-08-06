@@ -34,6 +34,8 @@ import proguard.testutils.JavaSource
 import java.io.PrintWriter
 import java.io.StringWriter
 
+private fun StringWriter.renderedText() = toString().replace("\r\n", "\n")
+
 class CodeInjectorTest : BehaviorSpec({
     isolationMode = IsolationMode.InstancePerLeaf
 
@@ -107,7 +109,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] invokestatic #\d+ = Methodref\(InjectContent\.log\(\)V\)
                     """.trimIndent(),
@@ -136,7 +138,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] invokestatic #\d+ = Methodref\(InjectContent\.logAndStore\(\)Ljava/lang/String;\)
                     \s*\[3] astore_1 v1
@@ -162,7 +164,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] invokestatic #\d+ = Methodref\(InjectContent\.logAndStore\(\)Ljava/lang/String;\)
                     \s*\[3] astore_1 v1
@@ -189,7 +191,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] bipush 99
                     \s*\[\d+] ldc2_w #\d+ = Double\(42.24\)
@@ -216,7 +218,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] ldc #\d+ = String\("foo"\)
                     \s*\[\d+] invokestatic #\d+ = Methodref\(InjectContent\.logString\(Ljava/lang/String;\)V\)
@@ -243,7 +245,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] ldc #\d+ = String\("bar"\)
                     \s*\[\d+] iconst_1
@@ -272,7 +274,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 instanceMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] ldc #\d+ = String\("bar"\)
                     \s*\[\d+] iconst_1
@@ -301,7 +303,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 defaultConstructor.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] aload_0 v0
                     \s*\[1] invokespecial #1 = Methodref\(java/lang/Object.<init>\(\)V\)
@@ -332,7 +334,7 @@ class CodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 delegatedConstructor.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] aload_0 v0
                     \s*\[1] iload_1 v1
@@ -366,7 +368,7 @@ class CodeInjectorTest : BehaviorSpec({
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
                 // Saw different byte code patterns to create and then pass array. Hence, not using the exact pattern to match array loading.
                 // It just checks that a newarray instruction is present in between `ldc foo` and `ldc bar`
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] iconst_1
                     \s*\[\d+] ldc #\d+ = String\("foo"\)
@@ -432,7 +434,7 @@ class CodeInjectorTest : BehaviorSpec({
             targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
             Then("InjectContent.log() should be injected after the monitorenter and before the isEnabled invocation") {
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[\d+] monitorenter
                     \s*\[\d+] invokestatic #\d+ = Methodref\(InjectContent\.log\(\)V\)

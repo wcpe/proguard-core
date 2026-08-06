@@ -135,6 +135,15 @@ public class KotlinConstants {
     "kotlin/Number",
     "kotlin/Throwable",
 
+    // 原子类型
+    "kotlin/concurrent/atomics/AtomicBoolean",
+    "kotlin/concurrent/atomics/AtomicInt",
+    "kotlin/concurrent/atomics/AtomicLong",
+    "kotlin/concurrent/atomics/AtomicReference",
+    "kotlin/concurrent/atomics/AtomicIntArray",
+    "kotlin/concurrent/atomics/AtomicLongArray",
+    "kotlin/concurrent/atomics/AtomicArray",
+
     // Collection types
     "kotlin/collections/Iterator",
     "kotlin/collections/Iterable",

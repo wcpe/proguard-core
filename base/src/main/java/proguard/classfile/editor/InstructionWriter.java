@@ -129,7 +129,7 @@ public class InstructionWriter implements InstructionVisitor, AttributeVisitor {
       // Create a new variable instruction that will fit.
       Instruction replacementInstruction =
           new VariableInstruction(
-              variableInstruction.opcode,
+              variableInstruction.canonicalOpcode(),
               variableInstruction.variableIndex,
               variableInstruction.constant);
 

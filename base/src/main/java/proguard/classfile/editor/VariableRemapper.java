@@ -202,7 +202,7 @@ public class VariableRemapper
       // Replace the instruction.
       Instruction replacementInstruction =
           new VariableInstruction(
-              variableInstruction.opcode, newVariableIndex, variableInstruction.constant);
+              variableInstruction.canonicalOpcode(), newVariableIndex, variableInstruction.constant);
 
       codeAttributeEditor.replaceInstruction(offset, replacementInstruction);
     }

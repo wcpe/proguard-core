@@ -1217,4 +1217,66 @@ class ClassReferenceInitializerTest : BehaviorSpec({
             }
         }
     }
+
+    Given("Kotlin atomic types should have references initialized") {
+        val (programClassPool, _) = ClassPoolBuilder.fromSource(
+            KotlinSource(
+                "Test.kt",
+                """
+                @file:OptIn(kotlin.concurrent.atomics.ExperimentalAtomicApi::class)
+
+                import kotlin.concurrent.atomics.AtomicArray
+                import kotlin.concurrent.atomics.AtomicBoolean
+                import kotlin.concurrent.atomics.AtomicInt
+                import kotlin.concurrent.atomics.AtomicIntArray
+                import kotlin.concurrent.atomics.AtomicLong
+                import kotlin.concurrent.atomics.AtomicLongArray
+                import kotlin.concurrent.atomics.AtomicReference
+
+                fun scalar(boolean: AtomicBoolean, int: AtomicInt, long: AtomicLong): AtomicBoolean = boolean
+
+                fun reference(value: AtomicReference<String>): AtomicReference<String> = value
+
+                fun arrays(
+                    int: AtomicIntArray,
+                    long: AtomicLongArray,
+                    reference: AtomicArray<String>,
+                ): AtomicArray<String> = reference
+                """.trimIndent(),
+            ),
+            initialize = false,
+        )
+
+        programClassPool.classesAccept(KotlinMetadataInitializer { _, _ -> })
+        programClassPool.classesAccept(ClassReferenceInitializer(programClassPool, ClassPool()))
+
+        val atomicTypeNames = setOf(
+            "kotlin/concurrent/atomics/AtomicBoolean",
+            "kotlin/concurrent/atomics/AtomicInt",
+            "kotlin/concurrent/atomics/AtomicLong",
+            "kotlin/concurrent/atomics/AtomicReference",
+            "kotlin/concurrent/atomics/AtomicIntArray",
+            "kotlin/concurrent/atomics/AtomicLongArray",
+            "kotlin/concurrent/atomics/AtomicArray",
+        )
+        val referencedClasses = mutableMapOf<String, Clazz?>()
+
+        programClassPool.classAccept(
+            "TestKt",
+            ReferencedKotlinMetadataVisitor(
+                AllTypeVisitor { _, kotlinTypeMetadata ->
+                    if (kotlinTypeMetadata != null) {
+                        val className = kotlinTypeMetadata.className
+                        if (className != null && className in atomicTypeNames) {
+                            referencedClasses[className] = kotlinTypeMetadata.referencedClass
+                        }
+                    }
+                },
+            ),
+        )
+
+        Then("All atomic logical types should have referenced classes") {
+            atomicTypeNames.forEach { referencedClasses[it] shouldNotBe null }
+        }
+    }
 })

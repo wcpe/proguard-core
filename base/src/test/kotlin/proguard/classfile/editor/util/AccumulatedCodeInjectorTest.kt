@@ -33,6 +33,8 @@ import proguard.testutils.JavaSource
 import java.io.PrintWriter
 import java.io.StringWriter
 
+private fun StringWriter.renderedText() = toString().replace("\r\n", "\n")
+
 class AccumulatedCodeInjectorTest : BehaviorSpec({
     isolationMode = IsolationMode.InstancePerLeaf
 
@@ -111,7 +113,7 @@ class AccumulatedCodeInjectorTest : BehaviorSpec({
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] invokestatic #\d+ = Methodref\(InjectContent\.logAndStore\(\)Ljava/lang/String;\)
                     \s*\[3] astore_1 v1
@@ -167,7 +169,7 @@ class AccumulatedCodeInjectorTest : BehaviorSpec({
             Then("InjectTarget.main() should contain all logging instructions in the correct order") {
                 val renderedMethod = StringWriter()
                 targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[0] invokestatic #\d+ = Methodref\(InjectContent\.log\(\)V\)
                     \s*\[\d+] bipush 99
@@ -245,7 +247,7 @@ class AccumulatedCodeInjectorTest : BehaviorSpec({
             targetMethod.accept(injectTargetClass, ClassPrinter(PrintWriter(renderedMethod)))
             Then("InjectContent.log() should be injected after the monitorenter and before the isEnabled invocation") {
 
-                renderedMethod.toString() shouldContain Regex(
+                renderedMethod.renderedText() shouldContain Regex(
                     """
                     \s*\[\d+] monitorenter
                     \s*\[\d+] invokestatic #\d+ = Methodref\(InjectContent\.log\(\)V\)
