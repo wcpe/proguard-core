@@ -32,6 +32,7 @@ import proguard.classfile.kotlin.visitor.KotlinMetadataVisitor;
 import proguard.classfile.kotlin.visitor.KotlinTypeAliasVisitor;
 import proguard.classfile.kotlin.visitor.KotlinTypeVisitor;
 import proguard.classfile.kotlin.visitor.ReferencedKotlinMetadataVisitor;
+import proguard.classfile.util.ClassUtil;
 import proguard.classfile.util.WarningLogger;
 import proguard.classfile.visitor.ClassVisitor;
 import proguard.resources.file.ResourceFile;
@@ -139,7 +140,10 @@ public class KotlinMetadataAsserter {
 
     @Override
     public void visitKotlinModule(KotlinModule kotlinModule) {
-      reporter.resetCounter(kotlinModule.name);
+      // 以内部类名格式（斜杠分隔）上报模块名，使其能够参与 -dontwarn 的类名过滤。
+      // 点号分隔的模块名无法匹配 -dontwarn 中斜杠分隔的内部名模式，
+      // 会导致缺失引用类所引起的模块校验警告无法被抑制。
+      reporter.resetCounter(ClassUtil.internalClassName(kotlinModule.name));
 
       constraints.forEach(constraint -> constraint.check(reporter, kotlinModule));
 
