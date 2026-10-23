@@ -50,6 +50,9 @@ dependencies {
 javadoc {
 	title          = 'ProGuardCORE'
 	destinationDir = file('docs/md/api')
+	// 与子项目保持一致，显式使用 UTF-8 解析源码中的中文注释。
+	options.encoding = 'UTF-8'
+	options.charSet = 'UTF-8'
 	options.addStringOption('Xdoclint:none', '-quiet')
 }
 
